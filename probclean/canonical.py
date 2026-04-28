@@ -40,3 +40,10 @@ def build_canonical_set(
     top = counts.head(top_k)
 
     return top.to_dict()
+
+def frequency_prior(canonical: Dict[str, int]) -> Dict[str, float]:
+  total = sum(canonical.values())
+    if total == 0:
+        raise ValueError("Canonical set has zero total frequency.")
+    return {v: freq / total for v, freq in canonical.items()}
+  

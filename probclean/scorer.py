@@ -81,3 +81,60 @@ def _normalize_log_priors(priors: Dict[str, float]) -> Dict[str, float]:
         return {k: 1.0 for k in log_vals}
 
     return {k: (v - min_v) / (max_v - min_v) for k, v in log_vals.items()}
+
+def score_candidates(
+    dirty_value: str,
+    canonical: Dict[str, int],
+    freq_priors: Dict[str, float],
+    alpha: float = 0.7,
+    max_edit_distance: int = 2,
+) -> List[CorrectionCandidate]:
+    """
+    Score all canonical candidates for a given dirty value.
+
+    Only considers candidates within max_edit_distance.
+
+    Args:
+        dirty_value:       The suspicious value to correct.
+        canonical:         Dict of canonical value → raw frequency.
+        freq_priors:       Dict of canonical value → normalized frequency prior.
+        alpha:             Similarity weight (1-alpha goes to frequency prior).
+        max_edit_distance: Maximum edit distance to consider a candidate.
+
+    Returns:
+        List of CorrectionCandidate, sorted by score descending.
+        Empty list if no candidates within max_edit_distance.
+    """
+    normalized_priors = _normalize_log_priors(freq_priors)
+    candidates = []
+
+    for canon_val, freq in canonical.items():
+        dist = levenshtein(dirty_value, canon_val)
+        if dist > max_edit_distance:
+            continue
+
+        sim = normalized_similarity(dirty_value, canon_val)
+        norm_prior = normalized_priors.get(canon_val, 0.0)
+        score = alpha * sim + (1 - alpha) * norm_prior
+
+        reasons = _build_reasons(dist, sim, freq, canonical)
+
+        candidates.append(
+            CorrectionCandidate(
+                original=dirty_value,
+                candidate=canon_val,
+                edit_distance=dist,
+                similarity=sim,
+                freq_prior=freq_priors.get(canon_val, 0.0),
+                score=score,
+                reasons=reasons,
+            )
+        )
+
+    # Sort by score descending
+    candidates.sort(key=lambda c: c.score, reverse=True)
+
+    # Assign confidence to each (relative to best)
+    _assign_confidence(candidates)
+
+    return candidates

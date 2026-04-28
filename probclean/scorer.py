@@ -217,3 +217,32 @@ def make_decision(
         )
 
     best = candidates[0]
+    if best.confidence < min_confidence:
+        return CorrectionResult(
+            original=dirty_value,
+            corrected=dirty_value,
+            confidence=best.confidence,
+            changed=False,
+            alternatives=candidates,
+            reasons=[f"confidence_{best.confidence:.2f}_below_threshold_{min_confidence}"],
+        )
+
+    if best.candidate == dirty_value:
+        return CorrectionResult(
+            original=dirty_value,
+            corrected=dirty_value,
+            confidence=best.confidence,
+            changed=False,
+            alternatives=candidates[1:],
+            reasons=["identity_correction"],
+        )
+
+    return CorrectionResult(
+        original=dirty_value,
+        corrected=best.candidate,
+        confidence=best.confidence,
+        changed=True,
+        alternatives=candidates[1:],
+        reasons=best.reasons,
+    )
+    

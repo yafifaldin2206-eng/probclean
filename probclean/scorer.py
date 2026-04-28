@@ -167,3 +167,22 @@ def _build_reasons(
         reasons.append("low_frequency_candidate")
 
     return reasons
+
+def _assign_confidence(candidates: List[CorrectionCandidate]) -> None:
+    """
+    Assign confidence scores in-place.
+
+    confidence_i = score_i / sum(all_scores)
+
+    The top candidate's confidence reflects how dominant it is
+    over all other candidates.
+    """
+    total = sum(c.score for c in candidates)
+    if total == 0:
+        for c in candidates:
+            c.confidence = 0.0
+        return
+    for c in candidates:
+        c.confidence = c.score / total
+
+

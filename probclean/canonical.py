@@ -46,4 +46,10 @@ def frequency_prior(canonical: Dict[str, int]) -> Dict[str, float]:
     if total == 0:
         raise ValueError("Canonical set has zero total frequency.")
     return {v: freq / total for v, freq in canonical.items()}
+
+def get_suspicious_values(
+    series: pd.Series,
+    canonical: Dict[str, int],
+    max_edit_distance: int = 2,
+) -> List[str]:
   

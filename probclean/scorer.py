@@ -24,3 +24,19 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from probclean.edit_distance import levenshtein, normalized_similarity
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class CorrectionCandidate:
+    """Represents a scored correction candidate for a dirty value."""
+
+    original: str
+    candidate: str
+    edit_distance: int
+    similarity: float
+    freq_prior: float
+    score: float
+    confidence: float = 0.0
+    reasons: List[str] = field(default_factory=list)

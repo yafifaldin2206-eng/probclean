@@ -6,6 +6,28 @@
 
 You have a CSV. The `customer_name` column has `"Alicee"`, `"J0hn"`, `"Bobb"`. You know these are typos. You fix them manually. Every time. This library does it for you.
 
+Frequency as a proxy for truth
+The key insight is: in a real CSV, correct values appear more often than typos. "John" appears 50 times. "J0hn" appears 3 times. You don't need labeled data to know which one is the typo — frequency tells you.
+So the canonical set is just the top-K most frequent values. No supervision required.
+
+Edit distance for detection, not just scoring
+Edit distance does two jobs here:
+
+Detection: flag a value as suspicious if it's close to a higher-frequency neighbor
+Scoring: measure how similar a dirty value is to each candidate
+
+The critical bug the tests caught was that detection only checked "is this value outside the canonical set?" — but a typo appearing 3 times enters the canonical set (min_freq=2), so it would never get flagged. The fix was comparing each value's frequency against its neighbors. If a close neighbor is more frequent, you're probably the typo.
+
+The scoring formula
+score = α * similarity + (1 - α) * log(freq_prior)
+Two signals, one number:
+
+Similarity — how close is this candidate to the dirty value
+Frequency prior — how common is this candidate in the data
+
+log on the frequency dampens outlier dominance — without it, a value appearing 1000× would completely drown out similarity. α=0.7 defaults to trusting similarity more, which is right for typo correction (the correct spelling is usually very close).
+Confidence = score_best / sum(all_scores) — this tells you how dominant the top candidate is. A 3-way tie gives confidence ~0.33. A clear winner gives confidence ~0.95.
+
 ## Install
 
 ```bash

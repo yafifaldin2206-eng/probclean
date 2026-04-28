@@ -185,4 +185,35 @@ def _assign_confidence(candidates: List[CorrectionCandidate]) -> None:
     for c in candidates:
         c.confidence = c.score / total
 
+def make_decision(
+    dirty_value: str,
+    candidates: List[CorrectionCandidate],
+    min_confidence: float = 0.5,
+) -> CorrectionResult:
+    """
+    Make the final correction decision given scored candidates.
 
+    Rules:
+    1. If no candidates → no change.
+    2. If best candidate confidence < min_confidence → no change.
+    3. If best candidate == dirty_value → no change (identity correction).
+    4. Otherwise → apply correction.
+
+    Args:
+        dirty_value:    The original suspicious value.
+        candidates:     Scored candidates, sorted by score descending.
+        min_confidence: Minimum confidence threshold to apply a correction.
+
+    Returns:
+        CorrectionResult with final decision.
+    """
+    if not candidates:
+        return CorrectionResult(
+            original=dirty_value,
+            corrected=dirty_value,
+            confidence=0.0,
+            changed=False,
+            reasons=["no_candidates_within_edit_distance"],
+        )
+
+    best = candidates[0]

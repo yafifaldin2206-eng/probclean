@@ -52,4 +52,11 @@ def get_suspicious_values(
     canonical: Dict[str, int],
     max_edit_distance: int = 2,
 ) -> List[str]:
-  
+  from probclean.edit_distance import levenshtein
+
+    canonical_keys = set(canonical.keys())
+    unique_values = set(series.dropna().astype(str).str.strip().unique())
+
+    suspicious = []
+    for val in unique_values:
+        val_freq = canonical.get(val, 0)

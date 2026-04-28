@@ -62,3 +62,22 @@ class CorrectionResult:
     alternatives: List[CorrectionCandidate] = field(default_factory=list)
     reasons: List[str] = field(default_factory=list)
 
+
+def _normalize_log_priors(priors: Dict[str, float]) -> Dict[str, float]:
+    """
+    Normalize log-transformed frequency priors to [0, 1].
+
+    Uses log(prior) to dampen the dominance of very frequent values,
+    then min-max normalizes across the candidate set.
+    """
+    if not priors:
+        return {}
+
+    log_vals = {k: math.log(v + 1e-9) for k, v in priors.items()}
+    min_v = min(log_vals.values())
+    max_v = max(log_vals.values())
+
+    if max_v == min_v:
+        return {k: 1.0 for k in log_vals}
+
+    return {k: (v - min_v) / (max_v - min_v) for k, v in log_vals.items()}

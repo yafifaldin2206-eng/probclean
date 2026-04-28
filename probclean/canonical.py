@@ -60,3 +60,14 @@ def get_suspicious_values(
     suspicious = []
     for val in unique_values:
         val_freq = canonical.get(val, 0)
+      for canon in canonical_keys:
+            if canon == val:
+                continue
+            canon_freq = canonical.get(canon, 0)
+            # Only flag val as suspicious if a higher-freq neighbor is close
+            if canon_freq > val_freq and levenshtein(val, canon) <= max_edit_distance:
+                suspicious.append(val)
+                break
+
+    return sorted(suspicious)
+      

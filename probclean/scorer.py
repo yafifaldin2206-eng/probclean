@@ -1,5 +1,4 @@
 """
-scorer.py
 
 Scores each candidate correction for a suspicious (dirty) value.
 

@@ -20,3 +20,12 @@ def levenshtein(s1: str, s2: str) -> int:
         prev = curr
 
     return prev[-1]
+
+def normalized_smiliarity(s1: str, s2: str) -> float:
+  if s1 == s2:
+    return 1.0
+  max_len = max(len(s1), len(s2))
+  if max_len == 0:
+    return 1.0
+  dist = levenshtein(s1,s2)
+  return 1.0 - dist/ max_len

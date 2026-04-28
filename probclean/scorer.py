@@ -138,3 +138,32 @@ def score_candidates(
     _assign_confidence(candidates)
 
     return candidates
+
+def _build_reasons(
+    dist: int,
+    sim: float,
+    freq: int,
+    canonical: Dict[str, int],
+) -> List[str]:
+    """Build human-readable reason strings for a candidate."""
+    reasons = []
+
+    reasons.append(f"edit_distance={dist}")
+
+    if sim >= 0.9:
+        reasons.append("very_high_similarity")
+    elif sim >= 0.75:
+        reasons.append("high_similarity")
+    else:
+        reasons.append("moderate_similarity")
+
+    max_freq = max(canonical.values()) if canonical else 1
+    freq_pct = freq / max_freq
+    if freq_pct >= 0.5:
+        reasons.append("high_frequency_candidate")
+    elif freq_pct >= 0.1:
+        reasons.append("moderate_frequency_candidate")
+    else:
+        reasons.append("low_frequency_candidate")
+
+    return reasons

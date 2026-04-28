@@ -40,3 +40,25 @@ class CorrectionCandidate:
     score: float
     confidence: float = 0.0
     reasons: List[str] = field(default_factory=list)
+    
+@dataclass
+class CorrectionResult:
+    """
+    Final correction decision for a single dirty value.
+
+    Attributes:
+        original:     The raw (dirty) value from the data.
+        corrected:    The best candidate, or original if no correction applied.
+        confidence:   Score confidence in [0, 1].
+        changed:      Whether a correction was applied.
+        alternatives: Other candidates considered (sorted by score desc).
+        reasons:      Human-readable explanation strings.
+    """
+
+    original: str
+    corrected: str
+    confidence: float
+    changed: bool
+    alternatives: List[CorrectionCandidate] = field(default_factory=list)
+    reasons: List[str] = field(default_factory=list)
+
